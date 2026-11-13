@@ -1,0 +1,22 @@
+---
+import type { FrameTemplate } from '../lib/templates';
+import { formatINR, priceRange } from '../lib/templates';
+import TemplatePreview from './TemplatePreview.astro';
+
+interface Props {
+  template: FrameTemplate;
+}
+const { template: t } = Astro.props;
+const range = priceRange(t);
+---
+
+<a class="template-card" href={`/frames/${t.slug}`} data-stat-view={t.slug}>
+  {t.preview ? <img class="frame-preview" src={t.preview} alt={t.name} loading="lazy" /> : <TemplatePreview template={t} />}
+  <div>
+    <div class="template-card__name">{t.name}</div>
+    <div class="template-card__meta">
+      {t.slots.length} photo{t.slots.length > 1 ? 's' : ''} · {t.category}
+    </div>
+    <div class="template-card__price">From {formatINR(range.min)}</div>
+  </div>
+</a>

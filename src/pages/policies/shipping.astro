@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import { site } from '../../config/site';
+---
+
+<Base title="Shipping Policy" description="Shipping fees, processing times and delivery information.">
+  <section class="section">
+    <div class="container prose">
+      <h1>Shipping policy</h1>
+      <h2>Fees</h2>
+      <p>
+        A flat shipping fee of ₹{site.shipping.flat_fee} applies to orders up to ₹{site.shipping.free_above}.
+        Orders above ₹{site.shipping.free_above} ship <strong>free</strong>.
+      </p>
+      <h2>Processing time</h2>
+      <p>
+        Most orders are processed within {site.shipping.processing_days} after the design and payment are confirmed
+        on WhatsApp. Orders placed during holidays may take a little longer.
+      </p>
+      <h2>Ordering for an occasion</h2>
+      <p>
+        For birthdays, anniversaries and other special dates, please order at least
+        {site.shipping.occasion_lead_days} working days in advance so there is time to resolve any delay.
+      </p>
+      <h2>Damaged in transit</h2>
+      <p>
+        Every frame is bubble-wrapped and boxed. If your order arrives damaged, send us an unboxing photo or video on
+        WhatsApp within 48 hours of delivery and we will replace it.
+      </p>
+    </div>
+  </section>
+</Base>

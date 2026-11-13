@@ -1,0 +1,56 @@
+---
+// Server-rendered SVG preview of a frame template: the exact slot geometry the
+// customizer uses, drawn with placeholder fills. Templates with an uploaded
+// preview image show that instead (see TemplateCard).
+import type { FrameTemplate } from '../lib/templates';
+import { slotPath } from '../lib/templates';
+
+interface Props {
+  template: FrameTemplate;
+  /** Border colour of the frame; defaults to the first framed finish. */
+  finish?: string | null;
+}
+const { template: t } = Astro.props;
+const finish = Astro.props.finish !== undefined ? Astro.props.finish : (t.finishes.find((f) => f.color)?.color ?? null);
+
+const W = t.aspect.w * 300;
+const H = t.aspect.h * 300;
+const border = finish ? Math.round(Math.min(W, H) * 0.045) : 0;
+const mat = finish ? Math.round(border * 0.6) : 0;
+const fills = ['#cfd6e4', '#dbcfe4', '#cfe4d9', '#e4d9cf', '#d6cfe4', '#cfe0e4'];
+---
+
+<svg
+  class="frame-preview"
+  viewBox={`${-border - mat} ${-border - mat} ${W + 2 * (border + mat)} ${H + 2 * (border + mat)}`}
+  role="img"
+  aria-label={`${t.name} layout`}
+>
+  {finish && (
+    <rect
+      x={-border - mat + border / 2}
+      y={-border - mat + border / 2}
+      width={W + 2 * mat + border}
+      height={H + 2 * mat + border}
+      fill="#fff"
+      stroke={finish}
+      stroke-width={border}
+    />
+  )}
+  <rect x="0" y="0" width={W} height={H} fill={t.background} />
+  {t.slots.map((s, i) => (
+    <path d={slotPath(s.shape, s.x * W, s.y * H, s.w * W, s.h * H)} fill={fills[i % fills.length]} />
+  ))}
+  {t.texts.map((txt) => (
+    <text
+      x={txt.x * W}
+      y={txt.y * H}
+      text-anchor={txt.align === 'left' ? 'start' : 'middle'}
+      font-size={txt.size * H}
+      fill={txt.color}
+      font-family={txt.font === 'sans' ? 'Mukta Malar, sans-serif' : txt.font === 'serif' ? 'Playfair Display, serif' : 'Great Vibes, cursive'}
+    >
+      {txt.placeholder}
+    </text>
+  ))}
+</svg>

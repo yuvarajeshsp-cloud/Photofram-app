@@ -1,0 +1,32 @@
+{
+  "brand_name": "PhotoFram",
+  "tagline": "Your memories, beautifully framed",
+  "logo": "",
+  "colors": {
+    "primary": "#3b38a6",
+    "primary_hover": "#2e2b8a",
+    "tint": "#ececff",
+    "background": "#f6f6ff"
+  },
+  "whatsapp": "",
+  "phone_display": "",
+  "instagram": "",
+  "facebook_url": "",
+  "youtube_url": "",
+  "google_reviews_url": "",
+  "address": {
+    "line1": "",
+    "line2": "",
+    "city": "",
+    "state": "",
+    "pin": ""
+  },
+  "shipping": {
+    "flat_fee": 50,
+    "free_above": 299,
+    "processing_days": "1-2 business days",
+    "occasion_lead_days": 15
+  },
+  "announcement": "Free shipping on orders above ₹299",
+  "hours": "Mon – Sat: 9:30 AM – 8:30 PM · Sunday closed"
+}

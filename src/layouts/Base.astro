@@ -1,0 +1,117 @@
+---
+import '@rajesh-hub/tokens/web.css';
+import '../styles/site.css';
+import ConsentBanner from '@rajesh-hub/web-growth/components/ConsentBanner.astro';
+import WhatsAppFloat from '@rajesh-hub/web-growth/components/WhatsAppFloat.astro';
+import { site } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+
+// Brand colours come from /admin (site.colors) and override the token
+// defaults; the tokens file stays the single source of the defaults.
+const brandVars = `:root{--accent:${site.colors.primary};--accent-hover:${site.colors.primary_hover};--lavender-100:${site.colors.tint};--lavender-50:${site.colors.background};}`;
+
+const nav = [
+  { href: '/frames', label: 'Frame templates' },
+  { href: '/how-it-works', label: 'How it works' },
+  { href: '/faqs', label: 'FAQs' },
+  { href: '/corporate', label: 'Corporate gifts' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title ? `${title} | ${site.name}` : site.name}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600&family=Playfair+Display:wght@600;700&family=Great+Vibes&display=swap"
+    />
+    <style set:html={brandVars}></style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    {site.announcement && <div class="announce">{site.announcement}</div>}
+    <header class="site-header">
+      <div class="container site-header__row">
+        <a class="site-header__brand" href="/">
+          {site.logo ? <img src={site.logo} alt={site.name} height="40" /> : <span class="site-header__name">{site.name}</span>}
+        </a>
+        <nav class="site-nav" aria-label="Main">
+          {nav.map((item) => (
+            <a href={item.href} aria-current={Astro.url.pathname.startsWith(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+        <a class="btn btn--primary site-header__cta" href="/frames">Create your frame</a>
+      </div>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer">
+      <div class="container grid grid--3">
+        <div>
+          <h3>{site.name}</h3>
+          <p>{site.tagline}</p>
+          {site.phoneDisplay && <p>{site.phoneDisplay}</p>}
+          {site.address.line1 && (
+            <p>
+              {site.address.line1}
+              {site.address.line2 && <>, {site.address.line2}</>}
+              <br />
+              {site.address.city} {site.address.pin}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3>Shop</h3>
+          <p>
+            <a href="/frames">Frame templates</a><br />
+            <a href="/how-it-works">How it works</a><br />
+            <a href="/corporate">Corporate &amp; bulk gifts</a><br />
+            <a href="/faqs">FAQs</a>
+          </p>
+        </div>
+        <div>
+          <h3>Policies</h3>
+          <p>
+            <a href="/policies/shipping">Shipping</a><br />
+            <a href="/policies/refund">Returns &amp; refunds</a><br />
+            <a href="/policies/privacy">Privacy</a><br />
+            <a href="/policies/terms">Terms of service</a>
+          </p>
+          {site.instagram && (
+            <p>
+              <a href={`https://instagram.com/${site.instagram}`} rel="noopener">Instagram</a>
+            </p>
+          )}
+        </div>
+      </div>
+      <div class="container site-footer__fine">© {new Date().getFullYear()} {site.name}. All rights reserved.</div>
+    </footer>
+    {site.whatsapp && (
+      <WhatsAppFloat phone={site.whatsapp} label="Chat on WhatsApp" greeting={`Hi! I found ${site.name} on your website.`} />
+    )}
+    <ConsentBanner
+      text="We use cookies to measure our Instagram and Facebook ads."
+      accept="Accept"
+      decline="No thanks"
+      privacyHref="/policies/privacy"
+      privacyLabel="Privacy policy"
+    />
+    <script>
+      import { initTracking, initShortlist, initStats } from '@rajesh-hub/web-growth';
+      initTracking();
+      initShortlist();
+      initStats();
+    </script>
+  </body>
+</html>

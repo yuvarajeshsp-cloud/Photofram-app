@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import FrameCustomizer from '../../components/customizer/FrameCustomizer';
+import { content } from '../../lib/content';
+import { site } from '../../config/site';
+import { formatINR, priceRange } from '../../lib/templates';
+
+export function getStaticPaths() {
+  return content.templates.map((t) => ({ params: { slug: t.slug }, props: { template: t } }));
+}
+
+const { template: t } = Astro.props;
+const range = priceRange(t);
+---
+
+<Base title={t.name} description={`${t.description} From ${formatINR(range.min)}. Upload your photos and preview your frame live.`}>
+  <section class="section" style="padding-top:32px">
+    <div class="container">
+      <nav style="font-size:0.9rem;margin-bottom:16px" aria-label="Breadcrumb">
+        <a href="/frames">Frame templates</a> › {t.name}
+      </nav>
+      <h1 style="margin-bottom:8px">{t.name}</h1>
+      <p class="section__intro" style="margin-bottom:24px">{t.description}</p>
+      <FrameCustomizer
+        client:load
+        template={t}
+        whatsapp={site.whatsapp}
+        brandName={site.name}
+        shipping={site.shipping}
+      />
+    </div>
+  </section>
+  <section class="section section--tint">
+    <div class="container prose">
+      <h2>Good to know</h2>
+      <ul>
+        <li>Your photos stay on your device while you design; share the originals on WhatsApp when you order.</li>
+        <li>Orders are processed within {site.shipping.processing_days}; order {site.shipping.occasion_lead_days} working days ahead for occasions.</li>
+        <li>Free shipping above ₹{site.shipping.free_above}; flat ₹{site.shipping.flat_fee} below.</li>
+        <li>Printed colours can vary slightly (≈10–20%) from screen previews.</li>
+      </ul>
+    </div>
+  </section>
+</Base>

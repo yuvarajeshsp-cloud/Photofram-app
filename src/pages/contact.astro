@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../config/site';
+
+const wa = site.whatsapp ? `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(`Hi ${site.name}! I have a question.`)}` : null;
+---
+
+<Base title="Contact" description={`Contact ${site.name} on WhatsApp, Instagram or by phone for personalized photo frame orders and questions.`}>
+  <section class="section">
+    <div class="container prose">
+      <h1>Contact us</h1>
+      <p class="section__intro">The fastest way to reach us is WhatsApp — we reply during shop hours.</p>
+      <div class="btn-row">
+        {wa && <a class="btn btn--whatsapp" href={wa} rel="noopener">Chat on WhatsApp</a>}
+        {site.instagram && <a class="btn btn--ghost" href={`https://instagram.com/${site.instagram}`} rel="noopener">Instagram</a>}
+      </div>
+      {site.phoneDisplay && <p style="margin-top:24px"><strong>Phone:</strong> {site.phoneDisplay}</p>}
+      {site.hours && <p><strong>Hours:</strong> {site.hours}</p>}
+      {site.address.line1 && (
+        <p>
+          <strong>Address:</strong><br />
+          {site.address.line1}{site.address.line2 && <>, {site.address.line2}</>}<br />
+          {site.address.city}, {site.address.state} {site.address.pin}
+        </p>
+      )}
+    </div>
+  </section>
+</Base>

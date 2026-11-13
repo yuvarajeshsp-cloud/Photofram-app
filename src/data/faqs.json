@@ -1,0 +1,32 @@
+{
+  "faqs": [
+    {
+      "q": "How do I order a personalized photo frame?",
+      "a": "Choose a frame template, upload your photos into each slot, adjust them until the live preview looks right, pick a size and frame finish, and send us the order on WhatsApp. We confirm the design and payment there."
+    },
+    {
+      "q": "When should I order for a special occasion?",
+      "a": "Please order at least 15 working days before the occasion so there is time to resolve any delays or issues."
+    },
+    {
+      "q": "Is there a shipping fee?",
+      "a": "A flat ₹50 shipping fee applies to orders up to ₹299. Orders above ₹299 ship free."
+    },
+    {
+      "q": "How long does processing take?",
+      "a": "Most orders are processed within 1–2 business days after the design and payment are confirmed."
+    },
+    {
+      "q": "Will the printed frame look exactly like the preview?",
+      "a": "The live preview shows your exact layout, crop and text. Printed colours can differ slightly (about 10–20%) from what you see on a screen because of screen brightness and print materials."
+    },
+    {
+      "q": "Do you edit or retouch my photos?",
+      "a": "No — we print the photos exactly as you upload and crop them. If you need colour correction or retouching, contact us on WhatsApp before ordering; extra charges apply."
+    },
+    {
+      "q": "Can I place a bulk or corporate order?",
+      "a": "Yes, we offer special discounts on bulk orders for weddings, corporate gifting and events. Message us on WhatsApp with your requirement."
+    }
+  ]
+}

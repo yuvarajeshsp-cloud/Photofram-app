@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../config/site';
+---
+
+<Base title="How It Works" description="How to design and order your personalized photo frame: choose a template, upload photos, preview live, order on WhatsApp.">
+  <section class="section">
+    <div class="container prose">
+      <h1>How it works</h1>
+
+      <h2>1 · Choose a frame template</h2>
+      <p>
+        Browse the <a href="/frames">template gallery</a>. Each template shows its photo positions, the number of
+        photos it needs, available sizes and prices up front.
+      </p>
+
+      <h2>2 · Upload your photos</h2>
+      <p>
+        Tap any photo slot to add a picture straight from your phone or computer. Drag to reposition and use the zoom
+        slider to crop each photo exactly how you want it. Add your name, message or date in the text fields.
+        Your photos stay on your device while you design — nothing is uploaded until you place the order.
+      </p>
+
+      <h2>3 · Watch the live preview</h2>
+      <p>
+        The preview updates instantly as you edit — the same layout, crop and text we print. Switch sizes and frame
+        finishes (black, white, dark brown or gallery-wrap canvas) and see the price change live.
+      </p>
+
+      <h2>4 · Order on WhatsApp</h2>
+      <p>
+        Happy with the design? Tap <strong>Order on WhatsApp</strong>. Your order summary and the preview image are
+        shared to our WhatsApp chat — attach your original photos there so we can print them at full quality. We
+        confirm the design, you pay securely, and production begins.
+      </p>
+
+      <h2>5 · Printed, packed and shipped</h2>
+      <p>
+        Orders are processed within {site.shipping.processing_days}. For special occasions, order at least
+        {site.shipping.occasion_lead_days} working days ahead. Shipping is free on orders above
+        ₹{site.shipping.free_above}; a flat ₹{site.shipping.flat_fee} applies below that.
+      </p>
+
+      <p><a class="btn btn--primary" href="/frames">Start creating</a></p>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import TemplateCard from '../../components/TemplateCard.astro';
+import { content } from '../../lib/content';
+
+const categories = [...new Set(content.templates.map((t) => t.category))];
+---
+
+<Base title="Frame Templates" description="Browse all personalized photo frame templates: collages, heart frames, single photo frames and more.">
+  <section class="section">
+    <div class="container">
+      <h1>Frame templates</h1>
+      <p class="section__intro">
+        Every template has fixed photo positions designed by us — you just add the photos and words.
+        Prices include the frame; shipping is free above ₹{content.settings.shipping.free_above}.
+      </p>
+      {categories.map((cat) => (
+        <section style="margin-bottom:40px">
+          <h2>{cat}</h2>
+          <div class="grid grid--3">
+            {content.templates.filter((t) => t.category === cat).map((t) => <TemplateCard template={t} />)}
+          </div>
+        </section>
+      ))}
+    </div>
+  </section>
+</Base>

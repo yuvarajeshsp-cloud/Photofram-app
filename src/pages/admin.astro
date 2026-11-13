@@ -1,0 +1,144 @@
+---
+// Website admin, following the Paavai admin pattern: sign in with a normal
+// Shop Manager account (Administrator or Manager); edit brand settings, frame
+// templates, reviews and FAQs stored in Supabase; Publish rebuilds the site.
+import '@rajesh-hub/tokens/web.css';
+import '../styles/site.css';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Site admin</title>
+    <meta name="robots" content="noindex" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600&family=Playfair+Display:wght@600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="admin-wrap">
+      <h1>Site admin</h1>
+      <div id="msg" class="admin-msg" hidden></div>
+
+      <section id="auth" class="admin-card">
+        <h2>Sign in</h2>
+        <p style="font-size:0.9rem;color:var(--ink-soft)">Use your Shop Manager account (Administrator or Manager).</p>
+        <form id="login-form" class="admin-grid">
+          <label class="admin-field">Email <input type="email" name="email" autocomplete="username" required /></label>
+          <label class="admin-field">Password <input type="password" name="password" autocomplete="current-password" required /></label>
+          <div class="admin-field--wide admin-actions">
+            <button class="btn btn--primary" type="submit">Sign in</button>
+          </div>
+        </form>
+      </section>
+
+      <div id="app" hidden>
+        <div class="admin-actions" style="margin-bottom:20px">
+          <button id="publish" class="btn btn--primary" type="button">Publish website</button>
+          <span id="publish-state" style="font-size:0.88rem;color:var(--ink-soft)"></span>
+          <span style="flex:1"></span>
+          <button id="signout" class="btn btn--ghost" type="button">Sign out</button>
+        </div>
+
+        <section class="admin-card">
+          <h2>Brand &amp; shop details</h2>
+          <form id="settings-form" class="admin-grid">
+            <label class="admin-field">Brand name <input name="brand_name" required /></label>
+            <label class="admin-field">Tagline <input name="tagline" /></label>
+            <label class="admin-field">WhatsApp number (digits, with country code) <input name="whatsapp" inputmode="numeric" placeholder="9198xxxxxxxx" /></label>
+            <label class="admin-field">Phone shown on site <input name="phone_display" placeholder="+91 98xxx xxxxx" /></label>
+            <label class="admin-field">Instagram handle <input name="instagram" placeholder="yourbrand" /></label>
+            <label class="admin-field">Facebook URL <input name="facebook_url" /></label>
+            <label class="admin-field admin-color admin-field--wide" style="display:flex;gap:18px;flex-wrap:wrap">
+              <span class="admin-color">Primary colour <input type="color" name="color_primary" /></span>
+              <span class="admin-color">Primary (hover) <input type="color" name="color_primary_hover" /></span>
+              <span class="admin-color">Tint <input type="color" name="color_tint" /></span>
+              <span class="admin-color">Page background <input type="color" name="color_background" /></span>
+            </label>
+            <label class="admin-field admin-field--wide">Logo
+              <input type="file" name="logo_file" accept="image/*" />
+              <span id="logo-now" style="font-weight:400;font-size:0.85rem"></span>
+            </label>
+            <label class="admin-field">Announcement bar <input name="announcement" /></label>
+            <label class="admin-field">Opening hours <input name="hours" /></label>
+            <label class="admin-field">Flat shipping fee (₹) <input name="ship_flat" type="number" min="0" /></label>
+            <label class="admin-field">Free shipping above (₹) <input name="ship_free" type="number" min="0" /></label>
+            <label class="admin-field">Processing time <input name="ship_processing" placeholder="1-2 business days" /></label>
+            <label class="admin-field">Occasion lead (working days) <input name="ship_lead" type="number" min="1" /></label>
+            <label class="admin-field">Address line 1 <input name="addr1" /></label>
+            <label class="admin-field">Address line 2 <input name="addr2" /></label>
+            <label class="admin-field">City <input name="city" /></label>
+            <label class="admin-field">State <input name="state" /></label>
+            <label class="admin-field">PIN <input name="pin" /></label>
+            <div class="admin-field--wide admin-actions">
+              <button class="btn btn--primary" type="submit">Save details</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-card">
+          <h2>Frame templates</h2>
+          <p style="font-size:0.9rem;color:var(--ink-soft)">
+            These are the designs customers personalize. Until you add one here, the site shows its built-in starter
+            templates. “Copy a starter” brings one in so you can edit prices and sizes.
+          </p>
+          <div class="admin-actions">
+            <button id="tpl-new" class="btn btn--ghost" type="button">New template</button>
+            <select id="tpl-starter" class="admin-field" style="max-width:260px"></select>
+            <button id="tpl-copy" class="btn btn--ghost" type="button">Copy a starter</button>
+          </div>
+          <div id="tpl-list"></div>
+        </section>
+
+        <section class="admin-card">
+          <h2>Reviews</h2>
+          <form id="review-form" class="admin-grid">
+            <label class="admin-field">Name <input name="name" required /></label>
+            <label class="admin-field">Rating (1–5) <input name="rating" type="number" min="1" max="5" value="5" required /></label>
+            <label class="admin-field admin-field--wide">Review <input name="text" required /></label>
+            <div class="admin-field--wide admin-actions"><button class="btn btn--ghost" type="submit">Add review</button></div>
+          </form>
+          <div id="review-list"></div>
+        </section>
+
+        <section class="admin-card">
+          <h2>FAQs</h2>
+          <form id="faq-form" class="admin-grid">
+            <label class="admin-field admin-field--wide">Question <input name="q" required /></label>
+            <label class="admin-field admin-field--wide">Answer <textarea name="a" required></textarea></label>
+            <div class="admin-field--wide admin-actions"><button class="btn btn--ghost" type="submit">Add FAQ</button></div>
+          </form>
+          <div id="faq-list"></div>
+        </section>
+      </div>
+    </div>
+
+    <dialog id="tpl-dialog" style="max-width:760px;width:94vw;border:1px solid var(--border);border-radius:14px;padding:20px">
+      <h2 style="margin-top:0">Edit template</h2>
+      <form id="tpl-form" class="admin-grid" method="dialog">
+        <label class="admin-field">Name <input name="name" required /></label>
+        <label class="admin-field">Slug (URL) <input name="slug" pattern="[a-z0-9-]+" required /></label>
+        <label class="admin-field">Category <input name="category" list="tpl-cats" required /></label>
+        <datalist id="tpl-cats"><option value="Collage"></option><option value="Single photo"></option></datalist>
+        <label class="admin-field">Catalog preview image (optional)
+          <input type="file" name="preview_file" accept="image/*" />
+        </label>
+        <label class="admin-field admin-field--wide">Description <textarea name="description" style="font-family:inherit"></textarea></label>
+        <label class="admin-field admin-field--wide">
+          Design JSON — aspect, slots, texts, sizes, finishes, pricing
+          <textarea name="json" rows="14" required></textarea>
+        </label>
+        <div class="admin-field--wide" id="tpl-preview" style="max-width:280px;margin:0 auto"></div>
+        <div class="admin-field--wide admin-actions">
+          <button class="btn btn--primary" value="save">Save template</button>
+          <button class="btn btn--ghost" value="cancel" formnovalidate>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="../scripts/admin.ts"></script>
+  </body>
+</html>
