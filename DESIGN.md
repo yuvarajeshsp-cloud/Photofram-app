@@ -137,7 +137,7 @@ Controls 10–12px radius, panels and walls 20px, wall chips round. Frames thems
 Primary (accent), ghost (white, hairline border) and WhatsApp (green, only for ordering). Height 48px, small variant 38px.
 
 ### Wall chips
-34px round swatches with a white ring; the selected chip gets an ink ring. Changing one updates every wall on the site and is remembered.
+34px round swatches with a white ring; the selected chip gets an ink ring. Changing one updates every wall on the site and is remembered. A fifth chip is a colour wheel (conic rainbow ring around the current custom colour) wrapping the native colour picker, so customers can match their own paint; custom walls get a dado 14% darker.
 
 ### Choices
 Size and finish pickers are bordered tiles with the price underneath; selected = accent border + accent tint.

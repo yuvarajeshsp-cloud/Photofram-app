@@ -4,9 +4,9 @@
 // true scale above a sofa, so sizes can be compared honestly. Ordering
 // composes a WhatsApp message and shares the preview image.
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FrameTemplate, PhotoSlot, WallId } from '../../lib/templates';
+import type { FrameTemplate, PhotoSlot } from '../../lib/templates';
 import { FONT_STACKS, WALLS, formatINR, parseSize, priceFor, slotPath } from '../../lib/templates';
-import { currentWall, setWall } from '../../scripts/walls';
+import { currentWall, isCustomWall, setWall, type WallChoice } from '../../scripts/walls';
 import { SUPABASE_KEY, SUPABASE_URL } from '../../config/supabase';
 
 const ArDialog = lazy(() => import('../ar/ArDialog'));
@@ -47,7 +47,7 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
   const [finishId, setFinishId] = useState(t.finishes[0]?.id ?? '');
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<'design' | 'wall'>('design');
-  const [wall, setWallState] = useState<WallId>(WALLS[0].id);
+  const [wall, setWallState] = useState<WallChoice>(WALLS[0].id);
   const [wallImg, setWallImg] = useState<string | null>(null);
   const [ordering, setOrdering] = useState(false);
   const [arOpen, setArOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
 
   useEffect(() => {
     setWallState(currentWall());
-    const onWall = (e: Event) => setWallState((e as CustomEvent<WallId>).detail);
+    const onWall = (e: Event) => setWallState((e as CustomEvent<WallChoice>).detail);
     window.addEventListener('pf:wall', onWall);
     return () => window.removeEventListener('pf:wall', onWall);
   }, []);
@@ -334,7 +334,8 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
   };
 
   const orderLabel = ordering ? 'Preparing…' : ready ? 'Order on WhatsApp' : `Add ${t.slots.length - filled} more photo${t.slots.length - filled > 1 ? 's' : ''}`;
-  const wallInfo = WALLS.find((w) => w.id === wall) ?? WALLS[0];
+  const customWall = isCustomWall(wall) ? wall : null;
+  const wallLabel = customWall ? 'custom colour' : (WALLS.find((w) => w.id === wall) ?? WALLS[0]).label.toLowerCase();
 
   return (
     <div className="pfc">
@@ -428,7 +429,7 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
           </>
         ) : (
           <>
-            <div className="pfc__room wall" aria-label={`${t.name} at ${size} on a ${wallInfo.label.toLowerCase()} wall, to scale above a sofa`}>
+            <div className="pfc__room wall" aria-label={`${t.name} at ${size} on a ${wallLabel} wall, to scale above a sofa`}>
               <span className="wall__dado" aria-hidden="true" />
               <svg className="pfc__sofa" viewBox="0 0 84 34" aria-hidden="true">
                 <rect x="2" y="2" width="80" height="20" rx="5" fill="#59606b" />
@@ -464,6 +465,19 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
                     onClick={() => setWall(w.id)}
                   />
                 ))}
+                <label
+                  className="wall-chip wall-chip--custom"
+                  title="Pick any wall colour"
+                  data-on={customWall ? '' : undefined}
+                  style={customWall ? ({ '--custom': customWall } as React.CSSProperties) : undefined}
+                >
+                  <input
+                    type="color"
+                    value={customWall ?? '#c9b8a6'}
+                    aria-label="Pick any wall colour"
+                    onChange={(e) => setWall(e.target.value as WallChoice)}
+                  />
+                </label>
               </div>
               <p className="pfc__hint">{size} shown to scale above a 7 ft sofa</p>
             </div>

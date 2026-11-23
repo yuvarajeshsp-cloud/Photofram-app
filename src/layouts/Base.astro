@@ -41,8 +41,14 @@ const wallsJson = JSON.stringify(WALLS.map((w) => ({ id: w.id, color: w.color, d
     <script is:inline define:vars={{ walls: wallsJson, key: WALL_STORAGE_KEY }}>
       // Apply the visitor's wall colour before first paint so walls don't flash.
       try {
-        const id = localStorage.getItem(key);
-        const w = JSON.parse(walls).find((x) => x.id === id);
+        const id = localStorage.getItem(key) || '';
+        let w = JSON.parse(walls).find((x) => x.id === id);
+        if (!w && /^#[0-9a-f]{6}$/i.test(id)) {
+          // Custom colour: same darker dado as scripts/walls.ts dadoFor().
+          const n = parseInt(id.slice(1), 16);
+          const ch = (s) => Math.round(((n >> s) & 255) * 0.86).toString(16).padStart(2, '0');
+          w = { id, color: id, dado: `#${ch(16)}${ch(8)}${ch(0)}` };
+        }
         if (w) {
           document.documentElement.style.setProperty('--wall', w.color);
           document.documentElement.style.setProperty('--wall-dado', w.dado);
