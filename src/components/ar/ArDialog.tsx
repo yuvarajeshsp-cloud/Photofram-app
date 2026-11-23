@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import ModelView from './ModelView';
-import { buildFrameGlb, isPhone, uploadFrameGlb, type FrameModelInput } from '../../lib/arModel';
+import { AR_LINK_DAYS, buildFrameGlb, isPhone, uploadFrameGlb, type FrameModelInput } from '../../lib/arModel';
 
 export interface ArDesign extends Omit<FrameModelInput, 'image'> {
   render: () => HTMLCanvasElement;
@@ -173,7 +173,7 @@ export default function ArDialog({ open, onClose, design, supabase }: Props) {
             )}
             <p className="pfc__note">
               Works on Android phones with Google Play Services for AR and on iPhones (iOS 12+). Only this 3D preview is
-              shared through the link; your original photos stay on this computer.
+              shared through the link, and it is deleted after {AR_LINK_DAYS} days; your original photos stay on this computer.
             </p>
           </div>
         )}

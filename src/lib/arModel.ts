@@ -60,7 +60,27 @@ export async function uploadFrameGlb(blob: Blob, supabaseUrl: string, supabaseKe
     body: blob,
   });
   if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+  void sweepExpired(supabaseUrl, supabaseKey).catch(() => {});
   return path;
+}
+
+/** Previews live for this many days; the database only exposes older ones. */
+export const AR_LINK_DAYS = 7;
+
+// Removes expired previews. Row level security only lets anyone list or delete
+// previews older than AR_LINK_DAYS, so this can never touch a live link.
+async function sweepExpired(supabaseUrl: string, supabaseKey: string) {
+  const headers = { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' };
+  const list = await fetch(`${supabaseUrl}/storage/v1/object/list/${AR_BUCKET}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ prefix: 'ar', limit: 100, offset: 0 }),
+  });
+  if (!list.ok) return;
+  const names = ((await list.json()) as { id: string | null; name: string }[]).filter((o) => o.id).map((o) => `ar/${o.name}`);
+  if (names.length) {
+    await fetch(`${supabaseUrl}/storage/v1/object/${AR_BUCKET}`, { method: 'DELETE', headers, body: JSON.stringify({ prefixes: names }) });
+  }
 }
 
 export const AR_PATH_RE = /^ar\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.glb$/;
