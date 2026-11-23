@@ -3,10 +3,13 @@
 // On-your-wall view: the same render hung on the visitor's wall colour at
 // true scale above a sofa, so sizes can be compared honestly. Ordering
 // composes a WhatsApp message and shares the preview image.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FrameTemplate, PhotoSlot, WallId } from '../../lib/templates';
 import { FONT_STACKS, WALLS, formatINR, parseSize, priceFor, slotPath } from '../../lib/templates';
 import { currentWall, setWall } from '../../scripts/walls';
+import { SUPABASE_KEY, SUPABASE_URL } from '../../config/supabase';
+
+const ArDialog = lazy(() => import('../ar/ArDialog'));
 
 type SlotState = { img: HTMLImageElement; dx: number; dy: number; zoom: number };
 
@@ -31,6 +34,7 @@ const Icon = {
   plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>,
   pencil: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z" /></svg>,
   wall: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M12 3v3M7 10l5-4 5 4" /><rect x="6" y="10" width="12" height="9" /></svg>,
+  ar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z" /><path d="M4 7.5 12 12l8-4.5M12 12v9" /></svg>,
   wa: <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.2 21.8l5.1-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.3-.2-.6-.3Z" /></svg>,
 };
 
@@ -46,6 +50,8 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
   const [wall, setWallState] = useState<WallId>(WALLS[0].id);
   const [wallImg, setWallImg] = useState<string | null>(null);
   const [ordering, setOrdering] = useState(false);
+  const [arOpen, setArOpen] = useState(false);
+  const [arUsed, setArUsed] = useState(false);
   const dragRef = useRef<{ slotId: string; startX: number; startY: number; dx0: number; dy0: number } | null>(null);
   const pendingSlotRef = useRef<string | null>(null);
 
@@ -263,6 +269,20 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
     };
   }, [size, finish]);
 
+  const arDesign = useMemo(() => {
+    const inches = parseSize(size) ?? { w: 12, h: 18 };
+    return {
+      render: () => renderTo(1400),
+      widthIn: (inches.w * geo.totalW) / geo.W,
+      heightIn: (inches.h * geo.totalH) / geo.H,
+      edgeColor: finish?.color ?? null,
+      name: t.name,
+      slug: t.slug,
+      size,
+      finishLabel: finish?.label ?? '',
+    };
+  }, [size, geo, finish, t, renderTo]);
+
   const orderMessage = () =>
     [
       `Hi ${brandName}! I'd like to order this frame:`,
@@ -333,12 +353,24 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
       />
 
       <div className="pfc__stage">
+        <div className="pfc__toolbar">
         <div className="pfc__tabs" role="tablist" aria-label="Preview">
           <button type="button" role="tab" id="pfc-tab-design" aria-controls="pfc-panel" className="pfc__tab" aria-selected={view === 'design'} onClick={() => setView('design')}>
             {Icon.pencil} Design
           </button>
           <button type="button" role="tab" id="pfc-tab-wall" aria-controls="pfc-panel" className="pfc__tab" aria-selected={view === 'wall'} onClick={() => setView('wall')}>
             {Icon.wall} On your wall
+          </button>
+        </div>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm pfc__ar"
+            onClick={() => {
+              setArUsed(true);
+              setArOpen(true);
+            }}
+          >
+            {Icon.ar} View in AR
           </button>
         </div>
 
@@ -537,6 +569,12 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
           </p>
         </div>
       </div>
+
+      {arUsed && (
+        <Suspense fallback={null}>
+          <ArDialog open={arOpen} onClose={() => setArOpen(false)} design={arDesign} supabase={{ url: SUPABASE_URL, key: SUPABASE_KEY }} />
+        </Suspense>
+      )}
 
       <div className="pfc__bar">
         <div>
