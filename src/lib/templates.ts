@@ -54,10 +54,21 @@ export interface FrameTemplate {
 }
 
 export const FONT_STACKS: Record<TextSlot['font'], string> = {
-  script: "'Great Vibes', 'Playfair Display', cursive",
-  serif: "'Playfair Display', Georgia, serif",
-  sans: "'Mukta Malar', system-ui, sans-serif",
+  script: "'Great Vibes', cursive",
+  serif: "Georgia, 'Times New Roman', serif",
+  sans: "'Onest', system-ui, sans-serif",
 };
+
+/** Wall colours for "See it on your wall". `dado` is the darker lower band. */
+export const WALLS = [
+  { id: 'mint', label: 'Mint', color: '#8fd3b6', dado: '#6fbf9e' },
+  { id: 'sky', label: 'Sky blue', color: '#8ccbeb', dado: '#67b1d6' },
+  { id: 'salmon', label: 'Salmon', color: '#f2ae9f', dado: '#e3907e' },
+  { id: 'white', label: 'White', color: '#f1eee6', dado: '#ddd8cc' },
+] as const;
+
+export type WallId = (typeof WALLS)[number]['id'];
+export const WALL_STORAGE_KEY = 'pf-wall';
 
 export function priceFor(t: FrameTemplate, size: string, finishId: string): number | null {
   const finish = t.finishes.find((f) => f.id === finishId);

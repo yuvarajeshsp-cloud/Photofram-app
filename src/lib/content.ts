@@ -52,7 +52,8 @@ async function load(): Promise<Content> {
       },
       // Until templates are added in /admin, the built-in set stays live.
       templates: templates.length ? templates : local.templates,
-      reviews: data.reviews?.length ? data.reviews : local.reviews,
+      // Only reviews the owner entered in /admin; never sample testimonials.
+      reviews: data.reviews ?? [],
       faqs: data.faqs?.length ? data.faqs : local.faqs,
     };
   } catch (err) {

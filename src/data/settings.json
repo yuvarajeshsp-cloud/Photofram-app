@@ -3,10 +3,10 @@
   "tagline": "Your memories, beautifully framed",
   "logo": "",
   "colors": {
-    "primary": "#3b38a6",
-    "primary_hover": "#2e2b8a",
-    "tint": "#ececff",
-    "background": "#f6f6ff"
+    "primary": "#2346d8",
+    "primary_hover": "#1b37b0",
+    "tint": "#eef2ff",
+    "background": "#ffffff"
   },
   "whatsapp": "",
   "phone_display": "",

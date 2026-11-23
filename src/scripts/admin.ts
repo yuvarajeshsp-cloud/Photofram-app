@@ -85,10 +85,10 @@ function fillSettingsForm() {
   f.phone_display.value = settings.phone_display ?? '';
   f.instagram.value = settings.instagram ?? '';
   f.facebook_url.value = settings.facebook_url ?? '';
-  f.color_primary.value = settings.colors?.primary ?? '#3b38a6';
-  f.color_primary_hover.value = settings.colors?.primary_hover ?? '#2e2b8a';
-  f.color_tint.value = settings.colors?.tint ?? '#ececff';
-  f.color_background.value = settings.colors?.background ?? '#f6f6ff';
+  f.color_primary.value = settings.colors?.primary ?? '#2346d8';
+  f.color_primary_hover.value = settings.colors?.primary_hover ?? '#1b37b0';
+  f.color_tint.value = settings.colors?.tint ?? '#eef2ff';
+  f.color_background.value = settings.colors?.background ?? '#ffffff';
   f.announcement.value = settings.announcement ?? '';
   f.hours.value = settings.hours ?? '';
   f.ship_flat.value = settings.shipping?.flat_fee ?? 50;
@@ -189,7 +189,7 @@ function svgPreview(design: any): string {
           `<path d="${slotPath(s.shape, s.x * W, s.y * H, s.w * W, s.h * H)}" fill="${['#cfd6e4', '#dbcfe4', '#cfe4d9', '#e4d9cf'][i % 4]}"/>`,
       )
       .join('');
-    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;border:1px solid var(--border);background:${design.background ?? '#fff'}">${slots}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;border:1px solid var(--line);border-radius:6px;background:${design.background ?? '#fff'}">${slots}</svg>`;
   } catch {
     return '<p style="color:#991b1b">Invalid design JSON</p>';
   }
@@ -276,7 +276,7 @@ function renderTemplates() {
   const list = $('#tpl-list');
   list.innerHTML = '';
   if (!templates.length) {
-    list.innerHTML = '<p style="color:var(--ink-soft);font-size:0.9rem;margin-top:12px">No templates yet — the site shows the built-in starter set.</p>';
+    list.innerHTML = '<p class="muted" style="font-size:0.9rem;margin:12px 0 0">No templates yet — the site shows the built-in starter set.</p>';
     return;
   }
   for (const row of templates) {
@@ -286,11 +286,11 @@ function renderTemplates() {
     div.innerHTML = `
       <div class="admin-item__body">
         <p class="admin-item__name"></p>
-        <p style="color:var(--ink-soft)"></p>
+        <p class="muted"></p>
       </div>
-      <button class="btn btn--ghost" data-act="edit" type="button">Edit</button>
-      <button class="btn btn--ghost" data-act="hide" type="button">${row.hidden ? 'Show' : 'Hide'}</button>
-      <button class="btn btn--ghost" data-act="del" type="button">Delete</button>`;
+      <button class="btn btn--ghost btn--sm" data-act="edit" type="button">Edit</button>
+      <button class="btn btn--ghost btn--sm" data-act="hide" type="button">${row.hidden ? 'Show' : 'Hide'}</button>
+      <button class="btn btn--ghost btn--sm" data-act="del" type="button">Delete</button>`;
     div.querySelector('.admin-item__name')!.textContent = d.name ?? row.slug;
     div.querySelector('p + p')!.textContent = `/frames/${row.slug} · ${(d.slots ?? []).length} photos · ${d.category ?? ''}`;
     div.querySelector('[data-act=edit]')!.addEventListener('click', () => openTplDialog(row));
@@ -320,10 +320,10 @@ function renderItems() {
       div.innerHTML = `
         <div class="admin-item__body">
           <p class="admin-item__name"></p>
-          <p style="color:var(--ink-soft)"></p>
+          <p class="muted"></p>
         </div>
-        <button class="btn btn--ghost" data-act="hide" type="button">${row.hidden ? 'Show' : 'Hide'}</button>
-        <button class="btn btn--ghost" data-act="del" type="button">Delete</button>`;
+        <button class="btn btn--ghost btn--sm" data-act="hide" type="button">${row.hidden ? 'Show' : 'Hide'}</button>
+        <button class="btn btn--ghost btn--sm" data-act="del" type="button">Delete</button>`;
       div.querySelector('.admin-item__name')!.textContent = kind === 'review' ? `${d.name} · ${'★'.repeat(d.rating ?? 5)}` : d.q;
       div.querySelector('p + p')!.textContent = kind === 'review' ? d.text : d.a;
       div.querySelector('[data-act=hide]')!.addEventListener('click', async () => {

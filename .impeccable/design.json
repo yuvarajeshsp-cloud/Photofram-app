@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T19:40:00Z",
+  "title": "Design System: Photofram",
+  "extensions": {
+    "colorMeta": {
+      "accent": { "role": "primary", "displayName": "Accent Blue", "tonalRamp": ["#0f1f63", "#16298a", "#1b37b0", "#2346d8", "#4d69e3", "#8299ec", "#b8c6f5", "#eef2ff"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "tonalRamp": ["#111827", "#1f2937", "#374151", "#4b5563", "#6b7280", "#9ca3af", "#e5e7eb", "#f6f7f9"] },
+      "whatsapp": { "role": "secondary", "displayName": "WhatsApp Green", "tonalRamp": ["#063d20", "#0a5a2f", "#0e7a40", "#128c4a", "#3aa86b", "#77c79a", "#b8e3c9", "#e7f6ec"] },
+      "wall-mint": { "role": "tertiary", "displayName": "Mint Wall", "tonalRamp": ["#1f5a44", "#2f7a5e", "#4e9e80", "#6fbf9e", "#8fd3b6", "#b0e2cc", "#d3f0e3", "#eef9f4"] },
+      "wall-sky": { "role": "tertiary", "displayName": "Sky Wall", "tonalRamp": ["#174a66", "#22698f", "#3d8db8", "#67b1d6", "#8ccbeb", "#b0dcf2", "#d4edf8", "#eef8fc"] },
+      "wall-salmon": { "role": "tertiary", "displayName": "Salmon Wall", "tonalRamp": ["#6b2a1e", "#94402f", "#c46652", "#e3907e", "#f2ae9f", "#f6c8bd", "#fae1da", "#fdf2ef"] },
+      "wall-white": { "role": "tertiary", "displayName": "White Wall", "tonalRamp": ["#57524a", "#7d776c", "#a8a194", "#ddd8cc", "#f1eee6", "#f6f4ef", "#faf9f6", "#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles and the home headline." },
+      "frame-script": { "displayName": "Frame script", "purpose": "Customer text inside frames only; never interface text." }
+    },
+    "shadows": [
+      { "name": "hang", "value": "drop-shadow(10px 18px 14px rgb(12 28 22 / 0.32))", "purpose": "Frames hanging on a wall, light from the top-left." },
+      { "name": "panel", "value": "0 1px 2px rgb(17 24 39 / 0.05), 0 8px 24px -12px rgb(17 24 39 / 0.18)", "purpose": "Order panel, menus, consent." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Wall colour changes (450ms) and frame resizing on the wall (400ms)." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "560px" },
+      { "name": "tablet", "value": "860px" },
+      { "name": "menu", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action on every page: Create your frame.",
+      "html": "<button class=\"ds-btn-primary\">Create your frame</button>",
+      "css": ".ds-btn-primary { background: #2346d8; color: #fff; font: 600 1rem Onest, system-ui, sans-serif; min-height: 48px; padding: 0 22px; border: 0; border-radius: 12px; cursor: pointer; transition: background-color .15s; } .ds-btn-primary:hover { background: #1b37b0; } .ds-btn-primary:focus-visible { outline: 3px solid rgb(35 70 216 / .55); outline-offset: 2px; }"
+    },
+    {
+      "name": "WhatsApp Order Button",
+      "kind": "button",
+      "refersTo": "button-whatsapp",
+      "description": "Only for placing the order.",
+      "html": "<button class=\"ds-btn-wa\">Order on WhatsApp</button>",
+      "css": ".ds-btn-wa { background: #128c4a; color: #fff; font: 600 1rem Onest, system-ui, sans-serif; min-height: 48px; padding: 0 22px; border: 0; border-radius: 12px; cursor: pointer; } .ds-btn-wa:hover { background: #0e7a40; } .ds-btn-wa:focus-visible { outline: 3px solid rgb(35 70 216 / .55); outline-offset: 2px; }"
+    },
+    {
+      "name": "Choice Tile",
+      "kind": "chip",
+      "refersTo": "choice",
+      "description": "Size and finish pickers with the price underneath.",
+      "html": "<button class=\"ds-choice\" aria-pressed=\"true\"><span>12 × 18 in<small>₹1,199</small></span></button>",
+      "css": ".ds-choice { display: flex; align-items: center; gap: 9px; min-height: 46px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; font: 500 .92rem Onest, system-ui, sans-serif; color: #111827; cursor: pointer; text-align: left; } .ds-choice small { display: block; color: #6b7280; font-size: .8rem; } .ds-choice:hover { border-color: #cfd3da; } .ds-choice[aria-pressed=true] { border-color: #2346d8; background: #eef2ff; box-shadow: inset 0 0 0 1px #2346d8; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Customer words and admin inputs.",
+      "html": "<label class=\"ds-field\">Names<input placeholder=\"Arjun ♥ Meera\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font: 500 .9rem Onest, system-ui, sans-serif; color: #4b5563; } .ds-field input { font: inherit; font-size: 1rem; color: #111827; border: 1px solid #e5e7eb; border-radius: 10px; padding: 11px 13px; min-height: 46px; } .ds-field input:focus { outline: none; border-color: #2346d8; box-shadow: 0 0 0 3px rgb(35 70 216 / .18); }"
+    },
+    {
+      "name": "Wall Chips",
+      "kind": "custom",
+      "refersTo": "wall-chips",
+      "description": "Switches every wall on the site; remembered across pages.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" style=\"background:#8fd3b6\" aria-pressed=\"true\"></button><button class=\"ds-chip\" style=\"background:#8ccbeb\"></button><button class=\"ds-chip\" style=\"background:#f2ae9f\"></button><button class=\"ds-chip\" style=\"background:#f1eee6\"></button></div>",
+      "css": ".ds-chips { display: flex; gap: 10px; } .ds-chip { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #e5e7eb, 0 2px 6px rgb(17 24 39 / .15); cursor: pointer; padding: 0; transition: transform .15s; } .ds-chip:hover { transform: scale(1.08); } .ds-chip[aria-pressed=true] { box-shadow: 0 0 0 2px #111827, 0 2px 6px rgb(17 24 39 / .15); }"
+    },
+    {
+      "name": "Hung Frame on Wall",
+      "kind": "custom",
+      "refersTo": "hung-frame",
+      "description": "Signature: a frame on a nail and picture wire over a textured wall.",
+      "html": "<div class=\"ds-wall\"><div class=\"ds-hung\"><span class=\"ds-nail\"></span><svg class=\"ds-wire\" viewBox=\"0 0 100 34\" preserveAspectRatio=\"none\"><path d=\"M50 1 L2 34 M50 1 L98 34\" stroke=\"#3a3a38\" stroke-width=\"1.2\" fill=\"none\" vector-effect=\"non-scaling-stroke\"/></svg><div class=\"ds-frame\"></div></div><span class=\"ds-dado\"></span></div>",
+      "css": ".ds-wall { position: relative; background: #8fd3b6; border-radius: 20px; height: 260px; display: grid; place-items: center; overflow: hidden; } .ds-dado { position: absolute; left: 0; right: 0; bottom: 0; height: 18%; background: #6fbf9e; } .ds-hung { position: relative; z-index: 1; width: 110px; filter: drop-shadow(10px 18px 14px rgb(12 28 22 / .32)); margin-top: 30px; } .ds-nail { position: absolute; left: 50%; bottom: calc(100% + 30px); width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: #3a3a38; } .ds-wire { position: absolute; left: 12%; width: 76%; bottom: 100%; height: 34px; } .ds-frame { aspect-ratio: 2 / 3; background: #fbfbf9; border: 10px solid #1c1c1c; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The frame belongs on a wall",
+    "overview": "A clean modern gift store with one dramatic idea: every frame is shown hanging on a wall, in the visitor's wall colour, and the customizer hangs the customer's own design at true scale above a sofa.",
+    "keyCharacteristics": ["White ground, one accent, one sans (Onest)", "Textured distemper walls with a dado band", "Nail, picture wire and soft offset shadow on every frame", "Wall colour remembered across pages"],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "The accent marks action and selection only; walls carry the colour.", "section": "colors" },
+      { "name": "Admin owns the brand", "body": "Accent, hover, tint and background come from /admin; never hard-code them.", "section": "colors" }
+    ],
+    "dos": ["Show every frame hanging on a wall", "Label sample photos as samples", "Keep WhatsApp green for ordering only"],
+    "donts": ["No eyebrows, gradient text or glyph icons", "No sample testimonials presented as real", "No walls used as decoration behind text"]
+  }
+}

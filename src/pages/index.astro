@@ -2,78 +2,103 @@
 import Base from '../layouts/Base.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import TemplatePreview from '../components/TemplatePreview.astro';
+import Hung from '../components/Hung.astro';
+import WallChips from '../components/WallChips.astro';
 import { content } from '../lib/content';
 import { site } from '../config/site';
 
-const featured = content.templates.slice(0, 3);
-const heroTemplates = content.templates.slice(0, 3);
+const featured = content.templates.slice(0, 4);
+const heroTemplate = content.templates.find((t) => t.slug === 'heart-collage-5') ?? content.templates[0];
+const star = '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.5 7.7l5.9-.9z"/></svg>';
 ---
 
-<Base title="Personalized Photo Frames" description={`${site.name}: pick a frame template, upload your photos, watch the live preview and order your personalized photo frame.`}>
-  <section class="section">
-    <div class="container hero">
-      <div>
-        <p class="hero__eyebrow">Personalized photo frames</p>
-        <h1>{site.tagline}</h1>
-        <p class="section__intro">
-          Pick a frame template, drop your photos into its slots, and watch your frame come to life{' '}
-          <strong>instantly</strong> — what you see in the live preview is exactly the layout we print.
-        </p>
-        <div class="btn-row">
-          <a class="btn btn--primary" href="/frames">Create your frame</a>
-          <a class="btn btn--ghost" href="/how-it-works">How it works</a>
-        </div>
+<Base title="Personalised Photo Frames" description={`${site.name}: choose a layout, add your photos, see your frame live on your own wall and order on WhatsApp.`}>
+  <section class="container hero">
+    <div>
+      <h1>Personalised photo frames, designed by you.</h1>
+      <p class="lede">Choose a layout, add your photos and words, and see the finished frame hanging on your wall before you order on WhatsApp.</p>
+      <div class="btn-row">
+        <a class="btn btn--primary" href={`/frames/${heroTemplate.slug}`}>Create your frame</a>
+        <a class="btn btn--ghost" href="/frames">Browse layouts</a>
       </div>
-      <div class="hero__art" aria-hidden="true">
-        {heroTemplates.map((t) => <TemplatePreview template={t} />)}
+      <ul class="hero__facts">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="18" r="2" /><circle cx="17" cy="18" r="2" /></svg>
+          Free shipping above ₹{site.shipping.free_above}
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          Ready in {site.shipping.processing_days}
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.4-4.1A8 8 0 1 1 8.2 19z" /></svg>
+          Order on WhatsApp
+        </li>
+      </ul>
+    </div>
+    <div class="hero__stage">
+      <div class="hero__wall wall">
+        <Hung><TemplatePreview template={heroTemplate} /></Hung>
+        <span class="wall__dado" aria-hidden="true"></span>
+      </div>
+      <div class="hero__stage-foot">
+        <WallChips />
+        <span class="sample-note">Sample photos shown</span>
       </div>
     </div>
   </section>
 
   <section class="section section--tint">
-    <div class="container center">
-      <h2>How it works</h2>
-      <p class="section__intro">From template to doorstep in four simple steps.</p>
-      <div class="grid grid--4 steps" style="text-align:left">
-        <div class="card step"><h3>Choose a template</h3><p>Collages, hearts, single frames — each with ready photo positions.</p></div>
-        <div class="card step"><h3>Upload your photos</h3><p>Fill each slot, then drag and zoom every photo until it sits just right.</p></div>
-        <div class="card step"><h3>See the live preview</h3><p>Your exact frame — layout, text and finish — rendered as you edit.</p></div>
-        <div class="card step"><h3>Order on WhatsApp</h3><p>Send us your design in one tap; we confirm, you pay, we print and ship.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
     <div class="container">
-      <h2>Popular frame templates</h2>
-      <p class="section__intro">Start from a design our customers love — every one is fully personalizable.</p>
-      <div class="grid grid--3">
+      <h2>Popular layouts</h2>
+      <p class="section__intro">Every layout has its photo spots set. You bring the pictures and the words.</p>
+      <div class="tgrid">
         {featured.map((t) => <TemplateCard template={t} />)}
       </div>
-      <p style="margin-top:24px"><a class="btn btn--ghost" href="/frames">See all templates</a></p>
-    </div>
-  </section>
-
-  <section class="section section--tint">
-    <div class="container">
-      <h2>What customers say</h2>
-      <div class="grid grid--3">
-        {content.reviews.slice(0, 3).map((r) => (
-          <div class="card review-card">
-            <div class="review-card__stars" aria-label={`${r.rating} out of 5 stars`}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
-            <p>{r.text}</p>
-            <strong>{r.name}</strong>
-          </div>
-        ))}
-      </div>
+      <p class="sample-note" style="margin:16px 0 0">Previews use sample photos; yours replace them in the editor.</p>
+      <p style="margin:32px 0 0"><a class="btn btn--ghost" href="/frames">See all {content.templates.length} layouts</a></p>
     </div>
   </section>
 
   <section class="section">
-    <div class="container center">
-      <h2>Gifting for a wedding or your team?</h2>
-      <p class="section__intro">We take bulk and corporate orders with special pricing, branded packing and doorstep delivery.</p>
-      <a class="btn btn--primary" href="/corporate">Corporate &amp; bulk gifts</a>
+    <div class="container">
+      <h2>From your phone to your wall</h2>
+      <p class="section__intro">No app, no account. Your photos stay on your device until you order.</p>
+      <ol class="steps">
+        <li><h3>Choose a layout</h3><p>Collages, hearts and single frames, each with its photo spots ready.</p></li>
+        <li><h3>Add your photos</h3><p>Tap a spot, pick a photo, then drag and zoom until it sits right.</p></li>
+        <li><h3>See it on your wall</h3><p>Check the size and finish hanging on a wall like yours, to scale.</p></li>
+        <li><h3>Order on WhatsApp</h3><p>Send the design in one tap. We confirm, you pay, we print and ship.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  {content.reviews.length > 0 && (
+    <section class="section section--tint">
+      <div class="container">
+        <h2>What customers say</h2>
+        <div class="quotes" style="margin-top:28px">
+          {content.reviews.slice(0, 3).map((r) => (
+            <figure class="quote">
+              <div class="quote__stars" aria-label={`${r.rating} out of 5 stars`} set:html={star.repeat(r.rating)} />
+              <p>{r.text}</p>
+              <cite>{r.name}</cite>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="container">
+      <div class="band">
+        <div>
+          <h2>Gifting for a wedding or your team?</h2>
+          <p>Bulk and corporate orders get special pricing, branded packing and doorstep delivery.</p>
+        </div>
+        <a class="btn btn--primary" href="/corporate">Corporate &amp; bulk gifts</a>
+      </div>
     </div>
   </section>
 </Base>

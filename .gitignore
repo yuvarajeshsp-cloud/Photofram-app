@@ -5,3 +5,9 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Impeccable runtime working files
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/questions/
+.impeccable/config.local.json

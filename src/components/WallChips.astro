@@ -1,0 +1,22 @@
+---
+import { WALLS } from '../lib/templates';
+interface Props {
+  label?: string;
+}
+const { label = 'See it on your wall' } = Astro.props;
+---
+
+<div class="wall-chips" role="group" aria-label="Wall colour">
+  <span class="wall-chips__label">{label}</span>
+  {WALLS.map((w, i) => (
+    <button
+      type="button"
+      class="wall-chip"
+      style={`background:${w.color}`}
+      data-wall-chip={w.id}
+      aria-pressed={i === 0 ? 'true' : 'false'}
+      aria-label={`${w.label} wall`}
+      title={w.label}
+    />
+  ))}
+</div>

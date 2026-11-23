@@ -4,6 +4,7 @@ import '../styles/site.css';
 import ConsentBanner from '@rajesh-hub/web-growth/components/ConsentBanner.astro';
 import WhatsAppFloat from '@rajesh-hub/web-growth/components/WhatsAppFloat.astro';
 import { site } from '../config/site';
+import { WALLS, WALL_STORAGE_KEY } from '../lib/templates';
 
 interface Props {
   title: string;
@@ -11,17 +12,19 @@ interface Props {
 }
 const { title, description } = Astro.props;
 
-// Brand colours come from /admin (site.colors) and override the token
-// defaults; the tokens file stays the single source of the defaults.
-const brandVars = `:root{--accent:${site.colors.primary};--accent-hover:${site.colors.primary_hover};--lavender-100:${site.colors.tint};--lavender-50:${site.colors.background};}`;
+// Brand colours come from /admin (site.colors) and override the defaults in
+// site.css; :root:root outranks the stylesheet's :root regardless of order.
+const c = site.colors;
+const brandVars = `:root:root{--accent:${c.primary};--accent-hover:${c.primary_hover};--accent-tint:${c.tint};--bg:${c.background};}`;
 
 const nav = [
-  { href: '/frames', label: 'Frame templates' },
+  { href: '/frames', label: 'Layouts' },
   { href: '/how-it-works', label: 'How it works' },
-  { href: '/faqs', label: 'FAQs' },
   { href: '/corporate', label: 'Corporate gifts' },
+  { href: '/faqs', label: 'FAQs' },
   { href: '/contact', label: 'Contact' },
 ];
+const wallsJson = JSON.stringify(WALLS.map((w) => ({ id: w.id, color: w.color, dado: w.dado })));
 ---
 
 <html lang="en">
@@ -30,20 +33,31 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title ? `${title} | ${site.name}` : site.name}</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600&family=Playfair+Display:wght@600;700&family=Great+Vibes&display=swap"
-    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Great+Vibes&display=swap" />
     <style set:html={brandVars}></style>
+    <script is:inline define:vars={{ walls: wallsJson, key: WALL_STORAGE_KEY }}>
+      // Apply the visitor's wall colour before first paint so walls don't flash.
+      try {
+        const id = localStorage.getItem(key);
+        const w = JSON.parse(walls).find((x) => x.id === id);
+        if (w) {
+          document.documentElement.style.setProperty('--wall', w.color);
+          document.documentElement.style.setProperty('--wall-dado', w.dado);
+          document.documentElement.dataset.wall = w.id;
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     {site.announcement && <div class="announce">{site.announcement}</div>}
     <header class="site-header">
       <div class="container site-header__row">
-        <a class="site-header__brand" href="/">
-          {site.logo ? <img src={site.logo} alt={site.name} height="40" /> : <span class="site-header__name">{site.name}</span>}
+        <a class="brand" href="/">
+          {site.logo ? <img src={site.logo} alt={site.name} /> : site.name}
         </a>
         <nav class="site-nav" aria-label="Main">
           {nav.map((item) => (
@@ -52,50 +66,59 @@ const nav = [
             </a>
           ))}
         </nav>
-        <a class="btn btn--primary site-header__cta" href="/frames">Create your frame</a>
+        <a class="btn btn--primary btn--sm site-header__cta" href="/frames">Create your frame</a>
+        <details class="menu">
+          <summary aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </summary>
+          <div class="menu__panel">
+            {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+            <a class="btn btn--primary" href="/frames">Create your frame</a>
+          </div>
+        </details>
       </div>
     </header>
     <main id="main"><slot /></main>
     <footer class="site-footer">
-      <div class="container grid grid--3">
-        <div>
-          <h3>{site.name}</h3>
-          <p>{site.tagline}</p>
-          {site.phoneDisplay && <p>{site.phoneDisplay}</p>}
-          {site.address.line1 && (
-            <p>
-              {site.address.line1}
-              {site.address.line2 && <>, {site.address.line2}</>}
-              <br />
-              {site.address.city} {site.address.pin}
-            </p>
-          )}
+      <div class="container">
+        <div class="site-footer__grid">
+          <div>
+            <a class="brand" href="/">{site.name}</a>
+            <p style="margin-top:10px">{site.tagline}</p>
+            {site.phoneDisplay && <p>{site.phoneDisplay}</p>}
+            {site.address.line1 && (
+              <p>
+                {site.address.line1}
+                {site.address.line2 && <>, {site.address.line2}</>}
+                <br />
+                {site.address.city} {site.address.pin}
+              </p>
+            )}
+            {site.hours && <p>{site.hours}</p>}
+          </div>
+          <div>
+            <h3>Shop</h3>
+            <ul>
+              <li><a href="/frames">All layouts</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/corporate">Corporate &amp; bulk gifts</a></li>
+              <li><a href="/faqs">FAQs</a></li>
+              <li><a href="/contact">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Policies</h3>
+            <ul>
+              <li><a href="/policies/shipping">Shipping</a></li>
+              <li><a href="/policies/refund">Returns &amp; refunds</a></li>
+              <li><a href="/policies/privacy">Privacy</a></li>
+              <li><a href="/policies/terms">Terms of service</a></li>
+              {site.instagram && <li><a href={`https://instagram.com/${site.instagram}`} rel="noopener">Instagram</a></li>}
+            </ul>
+          </div>
         </div>
-        <div>
-          <h3>Shop</h3>
-          <p>
-            <a href="/frames">Frame templates</a><br />
-            <a href="/how-it-works">How it works</a><br />
-            <a href="/corporate">Corporate &amp; bulk gifts</a><br />
-            <a href="/faqs">FAQs</a>
-          </p>
-        </div>
-        <div>
-          <h3>Policies</h3>
-          <p>
-            <a href="/policies/shipping">Shipping</a><br />
-            <a href="/policies/refund">Returns &amp; refunds</a><br />
-            <a href="/policies/privacy">Privacy</a><br />
-            <a href="/policies/terms">Terms of service</a>
-          </p>
-          {site.instagram && (
-            <p>
-              <a href={`https://instagram.com/${site.instagram}`} rel="noopener">Instagram</a>
-            </p>
-          )}
-        </div>
+        <div class="site-footer__fine">© {new Date().getFullYear()} {site.name}. All rights reserved.</div>
       </div>
-      <div class="container site-footer__fine">© {new Date().getFullYear()} {site.name}. All rights reserved.</div>
     </footer>
     {site.whatsapp && (
       <WhatsAppFloat phone={site.whatsapp} label="Chat on WhatsApp" greeting={`Hi! I found ${site.name} on your website.`} />
@@ -109,9 +132,19 @@ const nav = [
     />
     <script>
       import { initTracking, initShortlist, initStats } from '@rajesh-hub/web-growth';
+      import { initWallChips } from '../scripts/walls';
       initTracking();
       initShortlist();
       initStats();
+      initWallChips();
+
+      // Close the phone menu after choosing a link, and keep its panel under the header.
+      const menu = document.querySelector<HTMLDetailsElement>('.menu');
+      const header = document.querySelector<HTMLElement>('.site-header');
+      menu?.addEventListener('toggle', () => {
+        if (menu.open && header) document.documentElement.style.setProperty('--menu-top', `${header.getBoundingClientRect().bottom}px`);
+      });
+      menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => (menu.open = false)));
     </script>
   </body>
 </html>
