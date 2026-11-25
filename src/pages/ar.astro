@@ -1,11 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 import ArPage from '../components/ar/ArPage';
-import { SUPABASE_URL } from '../config/supabase';
 ---
 
 <Base title="See it on your wall" description="Place your personalised frame on your own wall in augmented reality, at its real size.">
   <section class="container" style="padding-top:24px;padding-bottom:56px">
-    <ArPage client:only="react" supabaseUrl={SUPABASE_URL} />
+    <ArPage client:only="react" />
   </section>
 </Base>

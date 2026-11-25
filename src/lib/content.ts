@@ -1,22 +1,24 @@
 // Everything editable on the site (brand settings, frame templates, reviews,
-// FAQs) is read once per build from Supabase, through
-// public_photofram_content(), which only returns items that are not hidden.
-// You edit it at /admin.
+// FAQs) lives in the Cloudflare D1 database `photofram` and is edited in the
+// admin Worker. The public Worker reads it on every page request
+// (src/middleware.ts calls loadContent), so a save in admin is live at once.
 //
 // The JSON files in src/data/ are the starting content and the fallback for
-// local development without internet. A Netlify build never falls back: if
-// Supabase can't be reached the build fails, so the last good version stays
-// live instead of the sample content.
+// anything not set yet: until templates are added in admin the built-in set is
+// shown, and FAQs fall back to the starter list. Reviews never fall back:
+// only reviews the owner entered are shown.
+//
+// `content` is one shared object that loadContent() refreshes in place, so
+// pages keep importing it as before. It is site-wide data (the same for every
+// visitor), so sharing it between concurrent requests is safe.
 import localSettings from '../data/settings.json';
 import localTemplates from '../data/templates.json';
-import localReviews from '../data/reviews.json';
 import localFaqs from '../data/faqs.json';
-import { SHOP_ORG_SLUG, SUPABASE_KEY, SUPABASE_URL } from '../config/supabase';
 import type { FrameTemplate } from './templates';
 
 export type Settings = typeof localSettings;
 
-type Content = {
+export type Content = {
   settings: Settings;
   templates: FrameTemplate[];
   reviews: { name: string; rating: number; text: string }[];
@@ -25,42 +27,64 @@ type Content = {
 
 const local: Content = {
   settings: localSettings,
-  templates: localTemplates.templates as FrameTemplate[],
-  reviews: localReviews.reviews,
+  templates: localTemplates.templates as unknown as FrameTemplate[],
+  reviews: [],
   faqs: localFaqs.faqs,
 };
 
-async function load(): Promise<Content> {
+export const content: Content = { ...local };
+
+/** Minimal D1 shape, so this file needs no Workers types. */
+export type D1Like = {
+  prepare(sql: string): unknown;
+  batch(statements: unknown[]): Promise<{ results: Record<string, unknown>[] }[]>;
+};
+
+const parse = (s: unknown) => {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/public_photofram_content`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ org_slug: SHOP_ORG_SLUG }),
-    });
-    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-    const data = await res.json();
-    if (!data.found) throw new Error(`No shop with slug "${SHOP_ORG_SLUG}"`);
-    const templates = (data.templates as FrameTemplate[] | null) ?? [];
-    return {
-      // Missing keys (e.g. a field added later) keep their local default.
-      settings: {
-        ...localSettings,
-        ...data.settings,
-        colors: { ...localSettings.colors, ...data.settings?.colors },
-        address: { ...localSettings.address, ...data.settings?.address },
-        shipping: { ...localSettings.shipping, ...data.settings?.shipping },
-      },
-      // Until templates are added in /admin, the built-in set stays live.
-      templates: templates.length ? templates : local.templates,
-      // Only reviews the owner entered in /admin; never sample testimonials.
-      reviews: data.reviews ?? [],
-      faqs: data.faqs?.length ? data.faqs : local.faqs,
-    };
-  } catch (err) {
-    if (process.env.NETLIFY) throw new Error(`[content] Could not load website content from Supabase: ${err}`);
-    console.warn(`[content] Using local sample content (${err}).`);
-    return local;
+    return typeof s === 'string' ? JSON.parse(s) : {};
+  } catch {
+    return {};
   }
+};
+
+export async function readContent(db: D1Like): Promise<Content> {
+  const [s, t, i] = await db.batch([
+    db.prepare(`SELECT data FROM settings WHERE id = 'site'`),
+    db.prepare(`SELECT slug, data FROM templates WHERE hidden = 0 ORDER BY position, created_at`),
+    db.prepare(`SELECT kind, data FROM items WHERE hidden = 0 ORDER BY position, created_at`),
+  ]);
+  const saved = parse(s.results[0]?.data);
+  const templates = t.results.map((r) => ({ ...parse(r.data), slug: r.slug })) as FrameTemplate[];
+  const items = i.results.map((r) => ({ kind: r.kind, ...parse(r.data) }));
+  const faqs = items.filter((x) => x.kind === 'faq').map(({ q, a }) => ({ q, a }));
+  return {
+    // Missing keys (e.g. a field added later) keep their local default.
+    settings: {
+      ...localSettings,
+      ...saved,
+      colors: { ...localSettings.colors, ...saved.colors },
+      address: { ...localSettings.address, ...saved.address },
+      shipping: { ...localSettings.shipping, ...saved.shipping },
+    },
+    // Until templates are added in admin, the built-in set stays live.
+    templates: templates.length ? templates : local.templates,
+    // Only reviews the owner entered in admin; never sample testimonials.
+    reviews: items.filter((x) => x.kind === 'review').map(({ name, rating, text }) => ({ name, rating, text })),
+    faqs: faqs.length ? faqs : local.faqs,
+  };
 }
 
-export const content = await load();
+let loadedOnce = false;
+
+/** Refreshes `content` from D1. If D1 can't be read, the last good content stays. */
+export async function loadContent(db: D1Like | undefined): Promise<Content> {
+  try {
+    if (!db) throw new Error('no D1 binding');
+    Object.assign(content, await readContent(db));
+    loadedOnce = true;
+  } catch (err) {
+    console.error(`[content] Could not read D1, using ${loadedOnce ? 'the last good' : 'the starter'} content: ${err}`);
+  }
+  return content;
+}

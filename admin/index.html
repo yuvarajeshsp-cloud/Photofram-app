@@ -1,11 +1,6 @@
----
-// Website admin, following the Paavai admin pattern: sign in with a normal
-// Shop Manager account (Administrator or Manager); edit brand settings, frame
-// templates, reviews and FAQs stored in Supabase; Publish rebuilds the site.
-import '@rajesh-hub/tokens/web.css';
-import '../styles/site.css';
----
-
+<!doctype html>
+<!-- Photofram site admin (Worker photofram-admin). Cloudflare Access signs
+     people in before this page loads; saves go live on the public site at once. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -22,25 +17,15 @@ import '../styles/site.css';
       </div>
       <div id="msg" class="admin-msg" role="status" hidden></div>
 
-      <section id="auth" class="admin-card" style="max-width:460px">
-        <h2>Sign in</h2>
-        <p>Use your Shop Manager account (Administrator or Manager).</p>
-        <form id="login-form" style="display:grid;gap:14px">
-          <label class="admin-field">Email <input type="email" name="email" autocomplete="username" required /></label>
-          <label class="admin-field">Password <input type="password" name="password" autocomplete="current-password" required /></label>
-          <div><button class="btn btn--primary" type="submit">Sign in</button></div>
-        </form>
-      </section>
-
-      <div id="app" hidden>
+      <div id="app">
         <div class="admin-card admin-actions" style="justify-content:space-between">
           <div class="admin-actions">
-            <button id="publish" class="btn btn--primary" type="button">Publish website</button>
-            <span id="publish-state" class="muted" style="font-size:0.9rem">Changes go live after you publish.</span>
+            <a id="view-site" class="btn btn--primary" href="/" target="_blank" rel="noopener">View site</a>
+            <span class="muted" style="font-size:0.9rem">Changes go live as soon as you save.</span>
           </div>
           <div class="admin-actions">
-            <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site</a>
-            <button id="signout" class="btn btn--ghost btn--sm" type="button">Sign out</button>
+            <span id="who" class="muted" style="font-size:0.9rem"></span>
+            <a class="btn btn--ghost btn--sm" href="/cdn-cgi/access/logout">Sign out</a>
           </div>
         </div>
 
@@ -143,6 +128,6 @@ import '../styles/site.css';
       </form>
     </dialog>
 
-    <script src="../scripts/admin.ts"></script>
+    <script type="module" src="./main.ts"></script>
   </body>
 </html>

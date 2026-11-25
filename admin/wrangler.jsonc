@@ -1,0 +1,32 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Photofram admin. The whole workers.dev hostname is protected by a
+  // Cloudflare Access application; the Worker also verifies the Access token.
+  // Shares the D1 database and the media bucket with the public Worker.
+  "name": "photofram-admin",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-17",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "photofram",
+      "database_id": "d5884e8a-b9c1-4e95-9a6d-54184e58db61",
+      "migrations_dir": "../migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "photofram-media" }],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "small-rain-35c8.cloudflareaccess.com",
+    "ACCESS_AUD": "d27a8f00d8928b2bd9f7ab9ea2f918ee0a72b30cf5a8fd719b7dc17664c9e5c5",
+    "PUBLIC_SITE_URL": "https://photofram.photofram-web.workers.dev"
+  }
+}

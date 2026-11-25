@@ -1,4 +1,4 @@
-// /ar/?m=ar/<uuid>.glb&n=<name>&s=<size>&f=<finish>&t=<slug>
+// /ar/?m=<uuid>.glb&n=<name>&s=<size>&f=<finish>&t=<slug>
 // Opened from the QR code a computer shows: loads the shared frame model and
 // offers "Place on your wall". The model URL is public here, so Scene Viewer
 // works as a fallback on Android phones without WebXR.
@@ -6,13 +6,9 @@ import { useEffect, useState } from 'react';
 import ModelView from './ModelView';
 import { AR_LINK_DAYS, AR_PATH_RE, isPhone, publicModelUrl } from '../../lib/arModel';
 
-interface Props {
-  supabaseUrl: string;
-}
-
 type Info = { src: string; name: string; size: string; finish: string; slug: string };
 
-export default function ArPage({ supabaseUrl }: Props) {
+export default function ArPage() {
   const [info, setInfo] = useState<Info | null | 'bad' | 'expired'>(null);
   const [phone, setPhone] = useState(true);
   const [canAR, setCanAR] = useState<boolean | null>(null);
@@ -23,12 +19,12 @@ export default function ArPage({ supabaseUrl }: Props) {
     const m = q.get('m') ?? '';
     if (!AR_PATH_RE.test(m)) return setInfo('bad');
     const clip = (v: string | null) => (v ?? '').slice(0, 80);
-    const next: Info = { src: publicModelUrl(supabaseUrl, m), name: clip(q.get('n')) || 'Your frame', size: clip(q.get('s')), finish: clip(q.get('f')), slug: clip(q.get('t')).replace(/[^a-z0-9-]/g, '') };
+    const next: Info = { src: publicModelUrl(m), name: clip(q.get('n')) || 'Your frame', size: clip(q.get('s')), finish: clip(q.get('f')), slug: clip(q.get('t')).replace(/[^a-z0-9-]/g, '') };
     // Previews are deleted after AR_LINK_DAYS; check before loading the viewer.
     fetch(next.src, { method: 'HEAD' })
-      .then((r) => setInfo(r.ok ? next : r.status === 400 || r.status === 404 ? 'expired' : next))
+      .then((r) => setInfo(r.ok ? next : r.status === 404 ? 'expired' : next))
       .catch(() => setInfo(next));
-  }, [supabaseUrl]);
+  }, []);
 
   if (info === null) return null;
   if (info === 'expired')

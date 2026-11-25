@@ -155,7 +155,7 @@ export function sendServerEvent(name: 'Contact' | 'ViewContent' | 'AddToWishlist
     ...(product && { custom_data: product }),
     ...metaBrowserIds(),
   });
-  const url = '/.netlify/functions/meta-event';
+  const url = '/api/meta-event';
   if (navigator.sendBeacon) navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
   else fetch(url, { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
 }

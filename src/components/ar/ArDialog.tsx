@@ -19,14 +19,13 @@ interface Props {
   open: boolean;
   onClose: () => void;
   design: ArDesign;
-  supabase: { url: string; key: string };
 }
 
 type Handoff = { state: 'idle' } | { state: 'uploading' } | { state: 'ready'; link: string; qr: string } | { state: 'error' };
 
 const Close = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>;
 
-export default function ArDialog({ open, onClose, design, supabase }: Props) {
+export default function ArDialog({ open, onClose, design }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [phone] = useState(isPhone);
   const [glb, setGlb] = useState<{ blob: Blob; url: string } | null>(null);
@@ -69,7 +68,7 @@ export default function ArDialog({ open, onClose, design, supabase }: Props) {
     if (!glb) return null;
     setHandoff({ state: 'uploading' });
     try {
-      const path = await uploadFrameGlb(glb.blob, supabase.url, supabase.key);
+      const path = await uploadFrameGlb(glb.blob);
       const q = new URLSearchParams({ m: path, n: design.name, s: design.size, f: design.finishLabel, t: design.slug });
       const link = `${location.origin}/ar/?${q.toString()}`;
       const qr = await QRCode.toDataURL(link, { margin: 1, width: 440, color: { dark: '#111827', light: '#ffffff' }, errorCorrectionLevel: 'M' });

@@ -9,8 +9,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check"
+    "preview": "npm run build && wrangler dev",
+    "check": "astro check",
+    "db:migrate:local": "wrangler d1 migrations apply photofram --local",
+    "db:migrate": "wrangler d1 migrations apply photofram --remote",
+    "deploy": "astro build && wrangler deploy",
+    "admin:build": "vite build --config admin/vite.config.ts",
+    "admin:dev": "npm run admin:build && wrangler dev -c admin/wrangler.jsonc --port 8788 --persist-to .wrangler/state",
+    "admin:deploy": "npm run admin:build && wrangler deploy -c admin/wrangler.jsonc",
+    "cf-types": "wrangler types -c admin/wrangler.jsonc admin/worker-configuration.d.ts"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
@@ -26,10 +33,17 @@
     "three": "0.183.2"
   },
   "devDependencies": {
+    "@astrojs/cloudflare": "^14.4.9",
     "@types/qrcode": "1.5.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "0.183.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.167.0"
+  },
+  "overrides": {
+    "@cloudflare/vite-plugin": {
+      "vite": "8.3.8"
+    }
   }
 }

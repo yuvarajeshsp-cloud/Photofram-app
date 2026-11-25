@@ -7,7 +7,6 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { FrameTemplate, PhotoSlot } from '../../lib/templates';
 import { FONT_STACKS, WALLS, formatINR, parseSize, priceFor, slotPath } from '../../lib/templates';
 import { currentWall, isCustomWall, setWall, type WallChoice } from '../../scripts/walls';
-import { SUPABASE_KEY, SUPABASE_URL } from '../../config/supabase';
 
 const ArDialog = lazy(() => import('../ar/ArDialog'));
 
@@ -586,7 +585,7 @@ export default function FrameCustomizer({ template: t, whatsapp, brandName, ship
 
       {arUsed && (
         <Suspense fallback={null}>
-          <ArDialog open={arOpen} onClose={() => setArOpen(false)} design={arDesign} supabase={{ url: SUPABASE_URL, key: SUPABASE_KEY }} />
+          <ArDialog open={arOpen} onClose={() => setArOpen(false)} design={arDesign} />
         </Suspense>
       )}
 

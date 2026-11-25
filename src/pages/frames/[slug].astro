@@ -5,11 +5,9 @@ import { content } from '../../lib/content';
 import { site } from '../../config/site';
 import { formatINR, priceRange } from '../../lib/templates';
 
-export function getStaticPaths() {
-  return content.templates.map((t) => ({ params: { slug: t.slug }, props: { template: t } }));
-}
-
-const { template: t } = Astro.props;
+// Rendered per request, so templates added or hidden in admin show at once.
+const t = content.templates.find((x) => x.slug === Astro.params.slug);
+if (!t) return new Response(null, { status: 404 });
 const range = priceRange(t);
 ---
 

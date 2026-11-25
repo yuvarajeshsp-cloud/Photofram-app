@@ -1,13 +1,30 @@
-// /admin logic: Supabase sign-in, then edit photofram_settings,
-// photofram_templates and photofram_items. Row level security enforces that
-// only an Administrator or Manager of the shop can change anything; this
-// script just gives those rules a friendly face.
-import { createClient, type Session } from '@supabase/supabase-js';
-import { MEDIA_BUCKET, SHOP_ORG_ID, SUPABASE_KEY, SUPABASE_URL } from '../config/supabase';
+// Admin page logic (Worker photofram-admin): edit the brand settings, frame
+// templates, reviews and FAQs stored in D1, through /api/admin/*. Cloudflare
+// Access signs people in before the page loads, and the Worker checks the
+// Access token on every request; this script just gives the API a friendly face.
 import localTemplates from '../data/templates.json';
 import { slotPath, type FrameTemplate } from '../lib/templates';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+async function api<T = unknown>(method: string, path: string, body?: unknown, contentType = 'application/json'): Promise<T> {
+  const expired = new Error('Your sign-in has expired. Reload the page to sign in again.');
+  let res: Response;
+  try {
+    res = await fetch(`/api/admin/${path}`, {
+      method,
+      // The custom header means another site can't send these requests for you.
+      headers: { 'X-Admin': '1', ...(body !== undefined && { 'Content-Type': contentType }) },
+      body: body === undefined ? undefined : contentType === 'application/json' ? JSON.stringify(body) : (body as BodyInit),
+    });
+  } catch {
+    // An expired Access session redirects to the sign-in page on another
+    // address, which the browser blocks for fetch.
+    throw expired;
+  }
+  if (res.redirected || res.status === 401) throw expired;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error || `Request failed (${res.status})`);
+  return data as T;
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const msgEl = $('#msg');
@@ -25,28 +42,6 @@ const fail = (err: unknown) => {
   say(err instanceof Error ? err.message : String(err), false);
 };
 
-// ---------- auth ----------
-
-async function refreshAuth(session: Session | null) {
-  const authed = !!session;
-  $('#auth').hidden = authed;
-  $('#app').hidden = !authed;
-  if (authed) await loadAll().catch(fail);
-}
-
-$('#login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = new FormData(e.target as HTMLFormElement);
-  const { error } = await supabase.auth.signInWithPassword({
-    email: String(f.get('email')),
-    password: String(f.get('password')),
-  });
-  if (error) say(error.message, false);
-});
-
-$('#signout').addEventListener('click', () => supabase.auth.signOut());
-supabase.auth.onAuthStateChange((_evt, session) => refreshAuth(session));
-
 // ---------- data ----------
 
 type ItemRow = { id: string; kind: 'review' | 'faq'; position: number; hidden: boolean; data: Record<string, unknown> };
@@ -57,17 +52,12 @@ let items: ItemRow[] = [];
 let templates: TplRow[] = [];
 
 async function loadAll() {
-  const [s, i, tp] = await Promise.all([
-    supabase.from('photofram_settings').select('data').maybeSingle(),
-    supabase.from('photofram_items').select('id,kind,position,hidden,data').order('position').order('created_at'),
-    supabase.from('photofram_templates').select('id,slug,position,hidden,data').order('position').order('created_at'),
-  ]);
-  if (s.error) throw s.error;
-  if (i.error) throw i.error;
-  if (tp.error) throw tp.error;
-  settings = s.data?.data ?? {};
-  items = (i.data ?? []) as ItemRow[];
-  templates = (tp.data ?? []) as TplRow[];
+  const res = await api<{ settings: Record<string, any>; items: ItemRow[]; templates: TplRow[]; siteUrl: string; email: string }>('GET', 'content');
+  settings = res.settings ?? {};
+  items = res.items;
+  templates = res.templates;
+  if (res.siteUrl) ($('#view-site') as HTMLAnchorElement).href = res.siteUrl;
+  $('#who').textContent = res.email ? `Signed in as ${res.email}` : '';
   fillSettingsForm();
   renderItems();
   renderTemplates();
@@ -103,12 +93,10 @@ function fillSettingsForm() {
   $('#logo-now').textContent = settings.logo ? `Current: ${settings.logo}` : 'No logo yet (brand name is shown instead).';
 }
 
+// Stores the image in R2 (photofram-media); returns its path on the public site (/media/...).
 async function uploadMedia(file: File, prefix: string): Promise<string> {
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-  const path = `${SHOP_ORG_ID}/${prefix}-${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, { upsert: true });
-  if (error) throw error;
-  return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+  const res = await api<{ url: string }>('POST', `media?prefix=${encodeURIComponent(prefix)}`, file, file.type || 'application/octet-stream');
+  return res.url;
 }
 
 sForm.addEventListener('submit', async (e) => {
@@ -148,13 +136,10 @@ sForm.addEventListener('submit', async (e) => {
         pin: f.pin.value.trim(),
       },
     };
-    const { error } = await supabase
-      .from('photofram_settings')
-      .upsert({ organization_id: SHOP_ORG_ID, data: settings, updated_at: new Date().toISOString() });
-    if (error) throw error;
+    await api('PUT', 'settings', settings);
     f.logo_file.value = '';
     fillSettingsForm();
-    say('Details saved. Press “Publish website” to put them live.');
+    say('Details saved. They are live on the site now.');
   } catch (err) {
     fail(err);
   }
@@ -255,18 +240,10 @@ tplForm.addEventListener('submit', async (e) => {
       description: f.description.value.trim(),
       ...(preview ? { preview } : {}),
     };
-    const row = {
-      organization_id: SHOP_ORG_ID,
-      slug: data.slug,
-      data,
-      updated_at: new Date().toISOString(),
-      ...(editingId ? { id: editingId } : { position: templates.length }),
-    };
-    const { error } = await supabase.from('photofram_templates').upsert(row, { onConflict: 'organization_id,slug' });
-    if (error) throw error;
+    await api('POST', 'templates', { id: editingId ?? undefined, slug: data.slug, data });
     tplDialog.close();
     await loadAll();
-    say('Template saved. Publish to put it live.');
+    say('Template saved. It is live on the site now.');
   } catch (err) {
     fail(err);
   }
@@ -295,13 +272,11 @@ function renderTemplates() {
     div.querySelector('p + p')!.textContent = `/frames/${row.slug} · ${(d.slots ?? []).length} photos · ${d.category ?? ''}`;
     div.querySelector('[data-act=edit]')!.addEventListener('click', () => openTplDialog(row));
     div.querySelector('[data-act=hide]')!.addEventListener('click', async () => {
-      const { error } = await supabase.from('photofram_templates').update({ hidden: !row.hidden }).eq('id', row.id);
-      error ? fail(error) : loadAll();
+      api('PATCH', `templates/${encodeURIComponent(row.id)}`, { hidden: !row.hidden }).then(loadAll).catch(fail);
     });
     div.querySelector('[data-act=del]')!.addEventListener('click', async () => {
       if (!confirm(`Delete template "${d.name ?? row.slug}"?`)) return;
-      const { error } = await supabase.from('photofram_templates').delete().eq('id', row.id);
-      error ? fail(error) : loadAll();
+      api('DELETE', `templates/${encodeURIComponent(row.id)}`).then(loadAll).catch(fail);
     });
     list.append(div);
   }
@@ -327,13 +302,11 @@ function renderItems() {
       div.querySelector('.admin-item__name')!.textContent = kind === 'review' ? `${d.name} · ${'★'.repeat(d.rating ?? 5)}` : d.q;
       div.querySelector('p + p')!.textContent = kind === 'review' ? d.text : d.a;
       div.querySelector('[data-act=hide]')!.addEventListener('click', async () => {
-        const { error } = await supabase.from('photofram_items').update({ hidden: !row.hidden }).eq('id', row.id);
-        error ? fail(error) : loadAll();
+        api('PATCH', `items/${encodeURIComponent(row.id)}`, { hidden: !row.hidden }).then(loadAll).catch(fail);
       });
       div.querySelector('[data-act=del]')!.addEventListener('click', async () => {
         if (!confirm('Delete this item?')) return;
-        const { error } = await supabase.from('photofram_items').delete().eq('id', row.id);
-        error ? fail(error) : loadAll();
+        api('DELETE', `items/${encodeURIComponent(row.id)}`).then(loadAll).catch(fail);
       });
       list.append(div);
     }
@@ -341,13 +314,7 @@ function renderItems() {
 }
 
 async function addItem(kind: 'review' | 'faq', data: Record<string, unknown>) {
-  const { error } = await supabase.from('photofram_items').insert({
-    organization_id: SHOP_ORG_ID,
-    kind,
-    data,
-    position: items.filter((i) => i.kind === kind).length,
-  });
-  if (error) throw error;
+  await api('POST', 'items', { kind, data });
   await loadAll();
 }
 
@@ -373,23 +340,4 @@ $('#faq-form').addEventListener('submit', async (e) => {
   }
 });
 
-// ---------- publish ----------
-
-$('#publish').addEventListener('click', async () => {
-  const state = $('#publish-state');
-  state.textContent = 'Starting…';
-  try {
-    const token = (await supabase.auth.getSession()).data.session?.access_token;
-    const res = await fetch('/.netlify/functions/publish', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `Publish failed (${res.status})`);
-    state.textContent = 'Rebuilding — the site updates in a few minutes.';
-    say('Publish started.');
-  } catch (err) {
-    state.textContent = '';
-    fail(err);
-  }
-});
+loadAll().catch(fail);

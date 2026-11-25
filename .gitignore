@@ -11,3 +11,6 @@ dist/
 .impeccable/mocks/
 .impeccable/questions/
 .impeccable/config.local.json
+.wrangler/
+.dev.vars
+admin/dist/
